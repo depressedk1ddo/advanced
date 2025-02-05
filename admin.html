@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <script>
+        async function loadUsers() {
+            let response = await fetch('/users');
+            let users = await response.json();
+            let userTable = document.getElementById('userTable');
+            userTable.innerHTML = '';
+            users.forEach(user => {
+                let row = userTable.insertRow();
+                row.insertCell(0).textContent = user.id;
+                row.insertCell(1).textContent = user.name;
+                row.insertCell(2).textContent = user.email;
+                let deleteCell = row.insertCell(3);
+                let deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteUser(user.id);
+                deleteCell.appendChild(deleteButton);
+            });
+        }
+
+        async function deleteUser(id) {
+            await fetch(`/delete?id=${id}`, { method: 'DELETE' });
+            loadUsers();
+        }
+
+        async function sendEmail() {
+            let email = document.getElementById('email').value;
+            let subject = document.getElementById('subject').value;
+            let body = document.getElementById('body').value;
+            await fetch('/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, subject, body })
+            });
+            alert('Email Sent!');
+        }
+
+        window.onload = loadUsers;
+    </script>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+    </table>
+    <h2>Send Email</h2>
+    <input type="text" id="email" placeholder="User Email" />
+    <input type="text" id="subject" placeholder="Subject" />
+    <textarea id="body" placeholder="Message"></textarea>
+    <button onclick="sendEmail()">Send Email</button>
+</body>
+</html>
+
